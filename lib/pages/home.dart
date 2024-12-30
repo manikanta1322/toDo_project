@@ -16,6 +16,7 @@ class _HomeState extends State<Home> {
   bool today = true, tomorrow = false, nextWeek = false;
   bool suggest = false;
   Stream? todoStream;
+  String greeting = "";
 
   getOnTheLoad() async {
     Stream<QuerySnapshot> stream = await DatabaseMethods().getAllTheWork(
@@ -24,60 +25,75 @@ class _HomeState extends State<Home> {
     setState(() {
         todoStream = stream;
     });
-}
+  }
 
   @override
   void initState() {
-    getOnTheLoad();
     super.initState();
+    updateGreeting(); // Set the initial greeting
+    getOnTheLoad();
   }
 
- Widget allWork() {
-  return Expanded(
-    child: StreamBuilder(
-        stream: todoStream,
-        builder: (context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasData && snapshot.data.docs.isNotEmpty) {
-            return ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: snapshot.data.docs.length,
-              itemBuilder: (context, index) {
-                DocumentSnapshot ds = snapshot.data.docs[index];
-                return CheckboxListTile(
-                  title: Text(
-                    ds["Work"],
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  value: ds["Yes"],
-                  onChanged: (value) async {
-                    await DatabaseMethods().updateifTicked(ds.id,
-                        today ? "Today" : tomorrow ? "Tomarrow" : "NextWeek");
-                    setState(() {
-                    
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Color(0xff279cfb),
-                );
-              },
-            );
-          } else {
-            return Center(
-              child: Text(
-                "No data available.",
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            );
-          }
-        }),
-  );
-}
+  void updateGreeting() {
+    final hour = DateTime.now().hour;
+    setState(() {
+      if (hour >= 5 && hour < 12) {
+        greeting = "Good Morning";
+      } else if (hour >= 12 && hour < 17) {
+        greeting = "Good Afternoon";
+      } else if (hour >= 17 && hour < 21) {
+        greeting = "Good Evening";
+      } else {
+        greeting = "Good Night";
+      }
+    });
+  }
 
+  Widget allWork() {
+    return Expanded(
+      child: StreamBuilder(
+          stream: todoStream,
+          builder: (context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasData && snapshot.data.docs.isNotEmpty) {
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: snapshot.data.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot ds = snapshot.data.docs[index];
+                  return CheckboxListTile(
+                    title: Text(
+                      ds["Work"],
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    value: ds["Yes"],
+                    onChanged: (value) async {
+                      await DatabaseMethods().updateifTicked(ds.id,
+                          today ? "Today" : tomorrow ? "Tomarrow" : "NextWeek");
+                      setState(() {
+                      
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    activeColor: Color(0xff279cfb),
+                  );
+                },
+              );
+            } else {
+              return Center(
+                child: Text(
+                  "No data available.",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              );
+            }
+          }),
+    );
+  }
 
   TextEditingController toDoController = TextEditingController();
 
@@ -114,7 +130,7 @@ class _HomeState extends State<Home> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Hello World",
+              "Hello Manikanta",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 30,
@@ -125,7 +141,7 @@ class _HomeState extends State<Home> {
               height: 10,
             ),
             Text(
-              "Good Morning",
+              greeting,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 30,
