@@ -22,15 +22,23 @@ class DatabaseMethods {
         .set(userTodayMap);
   }
 
-  Future<Stream<QuerySnapshot>> getAllTheWork(String collectionName) async {
-    return FirebaseFirestore.instance.collection(collectionName).snapshots();
+  Future<Stream<QuerySnapshot>> getAllTheWork(String category) async {
+    try {
+      print("Fetching data for category: $category");
+      return FirebaseFirestore.instance.collection(category).snapshots();
+    } catch (e) {
+      print("Error in getAllTheWork: $e");
+      rethrow;
+    }
   }
 
-updateifTicked(String id, String day) async {
+
+  
+
+  updateifTicked(String id, String day) async {
     return await FirebaseFirestore.instance
         .collection(day)
         .doc(id)
         .update({"Yes": true});
-}
-
+  }
 }
